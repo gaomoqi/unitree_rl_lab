@@ -62,7 +62,8 @@ Currently supports Unitree **Go2**, **H1** and **G1-29dof** robots.
     ```bash
     python scripts/rsl_rl/play.py --task Unitree-G1-29dof-Velocity-Play
     ```
-
+    HYDRA_FULL_ERROR=1
+    
 ## Deploy
 
 After the model training is completed, we need to perform sim2sim on the trained strategy in Mujoco to test the performance of the model.

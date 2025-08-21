@@ -197,7 +197,7 @@ def feet_gait(
 
     if command_name is not None:
         cmd_norm = torch.norm(env.command_manager.get_command(command_name), dim=1)
-        reward *= cmd_norm > 0.1
+        reward *= cmd_norm > 0.05 # 0.05 for h21; default 0.1
     return reward
 
 
