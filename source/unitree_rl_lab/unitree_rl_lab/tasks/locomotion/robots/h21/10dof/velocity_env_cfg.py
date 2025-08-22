@@ -183,7 +183,7 @@ class CommandsCfg:
         heading_control_stiffness=0.5,
         debug_vis=True,
         ranges=mdp.UniformVelocityCommandCfg.Ranges(
-            lin_vel_x=(-0., 0.3), lin_vel_y=(-0.1, 0.1), ang_vel_z=(-0.1, 0.1)
+            lin_vel_x=(-0., 0.5), lin_vel_y=(-0.2, 0.2), ang_vel_z=(-0.2, 0.2)
         ),
     )
 
@@ -273,7 +273,7 @@ class RewardsCfg:
     # -- task
     track_lin_vel_xy = RewTerm(
         func=mdp.track_lin_vel_xy_yaw_frame_exp,
-        weight=3,  #1
+        weight=2,  #1
         params={"command_name": "base_velocity", "std": math.sqrt(0.04)}, # 0.25
     )
     track_ang_vel_z = RewTerm(
@@ -317,15 +317,17 @@ class RewardsCfg:
     # base_height = RewTerm(func=mdp.base_height_l2, weight=-1, params={"target_height": 0.49})
 
     # -- feet
-    feet_air_time = RewTerm(
-        func=mdp.feet_air_time_positive_biped,
-        weight=0.25, 
-        params={
-            "command_name": "base_velocity",
-            "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
-            "threshold": 0.4,
-        },
-    )
+
+    # feet_air_time = RewTerm(
+    #     func=mdp.feet_air_time_positive_biped,
+    #     weight=0.25, 
+    #     params={
+    #         "command_name": "base_velocity",
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
+    #         "threshold": 0.8,  # 0.4
+    #     },
+    # )
+
     gait = RewTerm(
         func=mdp.feet_gait,
         weight=0.5, #0.5
@@ -337,19 +339,40 @@ class RewardsCfg:
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
         },
     )
+
+    # test_gait_reward = RewTerm(
+    #     func=mdp.GaitReward_cts,
+    #     weight=1.0, #1.0 (gaomoqi)
+    #     params={
+    #         "tracking_contacts_shaped_force": -1.0,
+    #         "tracking_contacts_shaped_vel": -1.0,
+    #         "gait_force_sigma": 25.0,
+    #         "gait_vel_sigma": 0.25,
+    #         "kappa_gait_probs": 0.05,
+    #         "command_name": "gait_command",
+    #         "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot_link"),
+    #         "asset_cfg": SceneEntityCfg("robot", body_names=".*foot_link"),
+    #     },
+    # )
+    
+
     feet_slide = RewTerm(
         func=mdp.feet_slide,
-        weight=-0.1,
+        weight=-0.5,
         params={
             "asset_cfg": SceneEntityCfg("robot", body_names=".*foot.*"),
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*foot.*"),
         },
     )
+
     feet_clearance = RewTerm(
         func=mdp.foot_clearance_reward,
         weight=0.5,#1.0
         params={
-            "std": 0.05, #0.05
+            "period": 0.8,  # gait cycle period
+            "offset": [0.0, 0.5],
+            "threshold": 0.55,
+            "std": 0.01, #0.05
             "tanh_mult": 2.0,
             "target_height": 0.2,
             "asset_cfg": SceneEntityCfg("robot", body_names=".*foot.*"),
@@ -430,12 +453,12 @@ class RobotEnvCfg(ManagerBasedRLEnvCfg):
 class RobotPlayEnvCfg(RobotEnvCfg):
     def __post_init__(self):
         super().__post_init__()
-        self.scene.num_envs = 24
+        self.scene.num_envs = 4
         # self.scene.terrain.terrain_generator.num_rows = 4
         # self.scene.terrain.terrain_generator.num_cols = 6
         # self.commands.base_velocity.ranges = self.commands.base_velocity.limit_ranges
 
-        self.commands.base_velocity.ranges.lin_vel_x = (0.2, 0.2)
+        self.commands.base_velocity.ranges.lin_vel_x = (0., 0.)
         self.commands.base_velocity.ranges.lin_vel_y = (0., 0.)
         self.commands.base_velocity.ranges.ang_vel_z = (0., 0.)
 
